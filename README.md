@@ -1,3 +1,7 @@
+SIMLITABMAS, Open Source Proposals Selection System For University Research And Community Service Funding 
+
+SIMLITBMAS (Sistem Informasi Penelitian Dan Pengabdian Masyarakat)
+
 Ini adalah proyek Sistem Informasi Seleksi Proposal Penelitian dan Pengabdian Masyarakat (P3M) yang di biayai 
 oleh Skema PNBP Politeknik Negeri Ambon. Bisa digunakan oleh kampus-kampus lainnya. Silahkan di checkout:
 
