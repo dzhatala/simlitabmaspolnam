@@ -1,0 +1,97 @@
+{% extends 'ag_base/backend.html.twig' %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    <!-- page script -->
+    <script type="text/javascript">
+        $(function() {
+            $("#__TABLENAME___list").dataTable({
+				serverSide: true,
+				dataType:'json',
+				ajax: '__TABLENAME__/list',
+				columns: [
+					{% for table_column in table_columns %}
+					{ "data": "{{ table_column }}"},
+                    {% endfor %}
+					{
+						"orderable": false,
+						"data": null,
+						"defaultContent": null,
+					}
+				],
+				rowCallback: function( row, data ) {
+					var actions = '<a href="__TABLENAME__/edit/' + data.{{primary_key}} + '" class="btn btn-primary btn-xs">Rubah</a> <a href="__TABLENAME__/delete/' + data.{{primary_key}} + '" onclick="return confirm_delete();" class="btn btn-danger btn-xs">Hapus</a>';
+					$('td:eq({{ table_columns|length }})', row).html( actions );
+				}
+			});
+        });
+
+        function confirm_delete(){
+            if(!confirm("Are you sure? This action cannot be undone.")) { 
+                return false;
+            }
+        }
+
+    </script>
+{% endblock %}
+
+{% block container %}
+
+    <div class="wrapper row-offcanvas row-offcanvas-left">
+
+        {% include 'menu.html.twig' with {'option': '__TABLENAME___list'} %}
+
+        <!-- Right side column. Contains the navbar and content of the page -->
+        <aside class="right-side">                
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Daftar {{app['translator'].trans('__TABLENAMEUP__'|lower) }}
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                <div class="row">
+                    <div class="col-xs-12">
+
+                        {% include 'ag_alerts.html.twig' %}
+
+                        <div class="box">
+                            <div class="box-header">
+                                
+                            </div><!-- /.box-header -->
+
+                            <div class="box-body table-responsive">
+                                <a class="btn btn-primary" href="{{ path('__TABLENAME___create') }}">Buat  {{app['translator'].trans('__TABLENAME__'|lower) }} </a><br /><br />
+                                <table id="__TABLENAME___list" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{app['translator'].trans('__TABLENAME___' ~ table_column|lower)}}</th>
+                                            {% endfor %}
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{app['translator'].trans(table_column|lower)}}</th>
+                                            {% endfor %}
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div><!-- /.box-body -->
+                        </div><!-- /.box -->
+                    </div>
+                </div>
+
+            </section><!-- /.content -->
+        </aside><!-- /.right-side -->
+    </div><!-- ./wrapper -->
+
+{% endblock %}

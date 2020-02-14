@@ -1,0 +1,70 @@
+<?php
+
+/*
+ dzulqarnaenhatala@gmail.com
+*/
+
+
+
+function get_words(){
+$lang_words = array(
+    'Hello World!' => 'Bonjour',
+	'Hello World!' => 'Bonjour',
+	
+	"optionsstatususulandibuka" => "Pilihan status Pengumuman" ,
+		"optionsstatususulandibuka_optionsstatususulandibuka_id" => "NO/ID" ,
+		"optionsstatususulandibuka_name" => "name" ,
+	"statususulan" => "Pilihan Status Usulan" ,
+		"statususulan_statususulan_id" => "NO/ID" ,
+		"statususulan_nama" => "nama" ,
+	"tipeusulan" => "Pilihan Jenis Usulan" ,
+		"tipeusulan_tipe_usulan_id" => "tipe_usulan_id" ,
+		"tipeusulan_nama" => "nama" ,
+	"tahun_usulan" => "Tahun Usulan" ,
+		"tahun_usulan_tahun_usulan_id" => "NO/ID" ,
+		"tahun_usulan_tahun_usulan" => "tahun_usulan" ,
+		"tahun_usulan_tahun_pelaksanaan" => "tahun_pelaksanaan" ,
+	"usulandibuka" => "Penerimaan Usulan" ,
+		"usulandibuka_usulandibuka_id" => "NO/ID" ,
+		"usulandibuka_tahun_usulan_id" => "tahun_usulan_id" ,
+		"usulandibuka_tipe_usulan_id" => "tipe_usulan_id" ,
+		"usulandibuka_nama" => "nama" ,
+		"usulandibuka_tanggal_buka" => "tanggal_buka" ,
+		"usulandibuka_batasakhir" => "batasakhir" ,
+		"usulandibuka_status" => "status" ,
+	"userlogin" => "Pengguna" ,
+		"userlogin_userlogin_id" => "userlogin_id" ,
+		"userlogin_login" => "login" ,
+		"userlogin_plain_password" => "plain_password" ,
+		"userlogin_hashed_password" => "hashed_password" ,
+		"userlogin_user_level" => "user_level" ,
+	"user_role_types" => "Pilihan Hak Pengguna" ,
+		"user_role_types_user_role_type_id" => "NO/ID" ,
+		"user_role_types_name" => "name" ,
+	"userroles" => "Hak Pengguna" ,
+		"userroles_user_roles_id" => "NO/ID" ,
+		"userroles_userlogin_id" => "userlogin_id" ,
+		"userroles_user_role_type_id" => "user_role_type_id" ,
+	"usulan" => "Riwayat usulan" ,
+		"usulan_usulan_id" => "NO/ID" ,
+		"usulan_pengusul" => "pengusul" ,
+		"usulan_usulandibuka_id" => "usulandibuka_id" ,
+		"usulan_tanggal_usul" => "tanggal_usul" ,
+		"usulan_judul" => "judul" ,
+		"usulan_ringkasan" => "ringkasan" ,
+		"usulan_biaya" => "biaya" ,
+		"usulan_path_proposal" => "Dokumen Proposal" ,
+		"usulan_reviewer1" => "reviewer1" ,
+		"usulan_nilai_review_1" => "nilai_review_1" ,
+		"usulan_path_review_1" => "Dokumen review_1" ,
+		"usulan_reviewer2" => "reviewer2" ,
+		"usulan_nilai_review_2" => "nilai_review_2" ,
+		"usulan_path_review_2" => "Dokumen review_2" ,
+		"usulan_statususulan_id" => "statususulan_id" ,
+
+		
+);
+
+	return $lang_words;
+}
+

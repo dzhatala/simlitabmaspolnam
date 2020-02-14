@@ -1,0 +1,60 @@
+<header class="header">
+    <a href="" class="logo">SIMLITABMAS</a>
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top" role="navigation">
+
+        <!-- Sidebar toggle button-->
+        <a href="#" class="navbar-btn sidebar-toggle" data-toggle="offcanvas" role="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </a>
+
+		
+		<div id="navbar" class="navbar navbar-right ">
+		 <ul class="nav navbar-nav">
+			 <!--<li><a href="{{ app['www_root']}}/vendor_01/logout.php">Logout</a></li>
+			 -->
+			 <li>
+			 {{app['credentials']['login']}} 
+			 
+			<!-- see views/backed.html for script declarationss -->	
+			 <form method="post" id="role_selector" name ="role_selector" action="{{ app['www_root']  }}/navchangerole" enctype="multipart/form-data">
+				<select id="role_selector_request_role" name="role_selector[request_role]" >
+				
+				<!--<option  value="Pengusul" selected="selected">
+			 		{{app['credentials']['current_role']}} 
+				</option>	
+				<option value="Reviewer" >
+							Reviewer
+				</option>
+				<option value="Pengusul" >
+							Pengusul
+				</option>
+				-->
+				
+				{% for  role in app['credentials']['roles'] %}
+					{% set _selected = role==  app['credentials']['current_role'] %}
+					<option value="{{role}}" {% if _selected  == true	%} 
+													selected ="selected"
+											  {% endif %}
+					> 
+						{{ role }} - by twig
+					</option>
+				{% endfor %}
+				
+				</select>
+			</form>	
+			 
+			 </li>
+		 </ul>
+	<a href="{{ app['www_root']}}/vendor_01/logout.php">Logout</a>
+	</div>
+	
+    </nav>
+	
+			
+			 
+
+</header>

@@ -1,0 +1,180 @@
+{% extends 'ag_base/backend.html.twig' %}
+{% block stylesheets %}
+{{parent()}}
+    <link href="{{ app['asset_path']}}/datepicker/css/jquery.datepick.css" rel="stylesheet">
+{% endblock %}
+
+{% block container %}
+
+    <div class="wrapper row-offcanvas row-offcanvas-left">
+
+        {% include 'menu.html.twig' with {'option': 'usulan_create'} %}
+
+        <!-- Right side column. Contains the navbar and content of the page -->
+        <aside class="right-side">                
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Buat Usulan
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                {% include 'ag_alerts.html.twig' %}
+
+                <div class="row">
+                    <div class="col-md-6">
+
+                        {{ form_start(form, {'method': 'POST'}) }}
+                            {{ form_errors(form) }}
+
+                            <div class="box box-info">
+                                <div class="box-header">
+                                    <h3 class="box-title"></h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+
+									<div class='form-group'>
+									    {{ form_label(form.PENGUSUL) }}
+									    {{ form_widget(form.PENGUSUL, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.USULANDIBUKA_ID) }}
+									    {{ form_widget(form.USULANDIBUKA_ID, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.TANGGAL_USUL) }}
+									    {{ form_widget(form.TANGGAL_USUL, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.JUDUL) }}
+									    {{ form_widget(form.JUDUL, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.RINGKASAN) }}
+									    {{ form_widget(form.RINGKASAN, { attr: { 'class': 'form-control textarea', 'style': 'width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.BIAYA) }}
+									    {{ form_widget(form.BIAYA, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.PATH_PROPOSAL) }}
+									    {{ form_widget(form.PATH_PROPOSAL, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+
+									{%if form.vars.value.PATH_PROPOSAL!="" %}
+											<div class='form-group'>
+												{%set uploader_userlogin_id=form.vars.value.PATH_PROPOSAL|split('__')|first%}
+											   <a href="{{app['www_uploaded']}}/{{uploader_userlogin_id}}/{{form.vars.value.PATH_PROPOSAL}}">Unduh </a> 
+											</div>
+									{%endif%}
+									<div class='form-group'>
+									    {{ form_widget(form.PATH_PROPOSAL_UPLOAD, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.REVIEWER1) }}
+									    {{ form_widget(form.REVIEWER1, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.NILAI_REVIEW_1) }}
+									    {{ form_widget(form.NILAI_REVIEW_1, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.PATH_REVIEW_1) }}
+									    {{ form_widget(form.PATH_REVIEW_1, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+
+									{%if form.vars.value.PATH_REVIEW_1!="" %}
+											<div class='form-group'>
+												{%set uploader_userlogin_id=form.vars.value.PATH_REVIEW_1|split('__')|first%}
+											   <a href="{{app['www_uploaded']}}/{{uploader_userlogin_id}}/{{form.vars.value.PATH_REVIEW_1}}">Unduh </a> 
+											</div>
+									{%endif%}
+									<div class='form-group'>
+									    {{ form_widget(form.PATH_REVIEW_1_UPLOAD, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.REVIEWER2) }}
+									    {{ form_widget(form.REVIEWER2, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.NILAI_REVIEW_2) }}
+									    {{ form_widget(form.NILAI_REVIEW_2, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.PATH_REVIEW_2) }}
+									    {{ form_widget(form.PATH_REVIEW_2, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+
+									{%if form.vars.value.PATH_REVIEW_2!="" %}
+											<div class='form-group'>
+												{%set uploader_userlogin_id=form.vars.value.PATH_REVIEW_2|split('__')|first%}
+											   <a href="{{app['www_uploaded']}}/{{uploader_userlogin_id}}/{{form.vars.value.PATH_REVIEW_2}}">Unduh </a> 
+											</div>
+									{%endif%}
+									<div class='form-group'>
+									    {{ form_widget(form.PATH_REVIEW_2_UPLOAD, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.STATUSUSULAN_ID) }}
+									    {{ form_widget(form.STATUSUSULAN_ID, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+                                                  
+
+                                </div><!-- /.box-body -->
+
+                                {{ form_rest(form) }}
+
+                                <div class="box-footer">
+                                    <button type="submit" class="btn btn-primary">Buat</button>
+                                    <button type="reset" class="btn btn-primary">Ulang</button>
+                                </div>
+
+                            </div><!-- /.box -->
+                        {{ form_end(form) }}
+
+
+                    </div>
+                </div>
+
+            </section><!-- /.content -->
+        </aside><!-- /.right-side -->
+    </div><!-- ./wrapper -->
+
+{% endblock %}
+{% block javascripts %}
+	{{ parent() }}
+   <script src="{{ app['asset_path']}}/datepicker/js/jquery.plugin.min.js"></script>
+	<script src="{{ app['asset_path']}}/datepicker/js/jquery.datepick.js"></script>
+	<script src="{{ app['asset_path']}}/datepicker/js/jquery.datepick-id.js"></script>
+	<script>
+	$(function() {
+      var dpopts= {dateFormat: 'yyyy-mm-dd'   
+                  };
+	{% if app['credentials']['current_role']=='Administrator'%}
+				$('#form_TANGGAL_USUL').datepick(dpopts);
+	{% endif %}
+   });
+	</script>
+{% endblock %}
+

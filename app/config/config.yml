@@ -1,0 +1,4 @@
+# app/config.config.yml
+imports:
+    # ...
+    - { resource: security.yml }

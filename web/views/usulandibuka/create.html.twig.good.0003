@@ -1,0 +1,125 @@
+{% extends 'ag_base/backend.html.twig' %}
+
+{% block stylesheets %}
+    {{parent()}}
+	<link href="{{ app['asset_path']}}/datepicker/css/jquery.datepick.css" rel="stylesheet">
+{% endblock %}
+
+
+{% block container %}
+
+    <div class="wrapper row-offcanvas row-offcanvas-left">
+
+        {% include 'menu.html.twig' with {'option': 'usulandibuka_create'} %}
+
+        <!-- Right side column. Contains the navbar and content of the page -->
+        <aside class="right-side">                
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Create Usulandibuka
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                {% include 'ag_alerts.html.twig' %}
+
+                <div class="row">
+                    <div class="col-md-6">
+
+                        {{ form_start(form, {'method': 'POST'}) }}
+                            {{ form_errors(form) }}
+
+                            <div class="box box-info">
+                                <div class="box-header">
+                                    <h3 class="box-title"></h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+
+									<div class='form-group'>
+									    {{ form_label(form.TAHUN_USULAN_ID) }}
+									    {{ form_widget(form.TAHUN_USULAN_ID, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.TIPE_USULAN_ID) }}
+									    {{ form_widget(form.TIPE_USULAN_ID, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.NAMA) }}
+									    {{ form_widget(form.NAMA, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.BATASAKHIR) }}
+									    {{ form_widget(form.BATASAKHIR, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.TANGGAL_BUKA) }}
+									    {{ form_widget(form.TANGGAL_BUKA, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.DIBUKA) }}
+									    {{ form_widget(form.DIBUKA, { attr: { 'class': 'form-control' }}) }}
+									</div>
+
+                                                  
+
+                                </div><!-- /.box-body -->
+
+                                {{ form_rest(form) }}
+
+                                <div class="box-footer">
+                                    <button type="submit" class="btn btn-primary">Create</button>
+                                </div>
+
+                            </div><!-- /.box -->
+                        {{ form_end(form) }}
+
+						<div id="inlineDatepicker"></div>
+                    </div>
+                </div>
+
+            </section><!-- /.content -->
+        </aside><!-- /.right-side -->
+    </div><!-- ./wrapper -->
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script type="text/javascript">
+        $(function() {
+            $(".textarea").wysihtml5();
+        });
+    </script>
+	
+	<script src="{{ app['asset_path']}}/datepicker/js/jquery.plugin.min.js"></script>
+	<script src="{{ app['asset_path']}}/datepicker/js/jquery.datepick.js"></script>
+
+	<script>
+	
+	var options = $.extend(
+    {},                                  // empty object
+    { dateFormat: "yyyy-mm-dd" /*, ... */ } // your custom options
+	);
+	
+	$(function() {
+		$('#form_TANGGAL_BUKA').datepick(options);
+		$('#form_BATASAKHIR').datepick(options);
+		$('#inlineDatepicker').datepick({onSelect: showDate});
+	});
+
+	function showDate(date) {
+		alert('The date chosen is ' + date);
+	}
+	</script>
+
+
+{% endblock %}

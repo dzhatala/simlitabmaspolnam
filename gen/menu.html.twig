@@ -1,0 +1,37 @@
+{% extends 'ag_menu.html.twig' %}
+
+
+{% block menu %}
+{% if (app['credentials']['current_role']=="Administrator" )%}
+__MENU_OPTIONS__
+{% endif %}
+
+
+{% if app['credentials']['current_role']!="Administrator"%}
+<li class="treeview {% if option is defined and (option == 'usulan_list' or option == 'usulan_create' or option == 'usulan_edit') %}active{% endif %}">
+    <a href="#">
+        <i class="fa fa-folder-o"></i>
+        <span>Pengumuman</span>
+        <i class="fa pull-right fa-angle-right"></i>
+    </a>
+    <ul class="treeview-menu" style="display: none;">
+        <li {% if option is defined and option == 'usulandibuka_list' %}class="active"{% endif %}><a href="{{ path('usulandibuka_list') }}" style="margin-left: 10px;"><i class="fa fa-angle-double-right"></i> Tabel</a></li>
+        <li {% if option is defined and option == 'usulandibuka_create' %}class="active"{% endif %}><a href="{{ path('usulandibuka_create') }}" style="margin-left: 10px;"><i class="fa fa-angle-double-right"></i> Buat</a></li>
+    </ul>
+</li>
+
+
+<li class="treeview {% if option is defined and (option == 'usulan_list' or option == 'usulan_create' or option == 'usulan_edit') %}active{% endif %}">
+    <a href="#">
+        <i class="fa fa-folder-o"></i>
+        <span>usulan</span>
+        <i class="fa pull-right fa-angle-right"></i>
+    </a>
+    <ul class="treeview-menu" style="display: none;">
+        <li {% if option is defined and option == 'usulan_list' %}class="active"{% endif %}><a href="{{ path('usulan_list') }}" style="margin-left: 10px;"><i class="fa fa-angle-double-right"></i> List</a></li>
+        <li {% if option is defined and option == 'usulan_create' %}class="active"{% endif %}><a href="{{ path('usulan_create') }}" style="margin-left: 10px;"><i class="fa fa-angle-double-right"></i> Create</a></li>
+    </ul>
+</li>
+{%endif%}
+
+{% endblock %}

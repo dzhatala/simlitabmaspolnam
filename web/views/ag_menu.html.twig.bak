@@ -1,0 +1,46 @@
+<aside class="left-side sidebar-offcanvas">                
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+        <!-- Sidebar user panel -->
+
+        <!-- sidebar menu: : style can be found in sidebar.less -->
+        <ul class="sidebar-menu">
+            
+            <li {% if option is defined and option == 'dasboard' %}class="active"{% endif %}>
+                <a href="{{ path('dashboard') }}">
+                    <i class="fa fa-dashboard"></i> <span>Dashboard</span>
+                </a>
+            </li>
+
+			
+            {% block menu %}{% endblock %}
+
+        </ul>
+    </section>
+    <!-- /.sidebar -->
+
+	     <div class="user-panel">
+            <div class="pull-left info">
+            
+<li class="treeview {% if option is defined and (option == 'optionsstatususulandibuka_list' or option == 'optionsstatususulandibuka_create' or option == 'optionsstatususulandibuka_edit') %}active{% endif %}">
+    <a href="#">
+        <i class="fa fa-folder-o"></i>
+        <span>optionsstatususulandibuka</span>
+        <i class="fa pull-right fa-angle-right"></i>
+    </a>
+    <ul class="treeview-menu" style="display: none;">
+        <li {% if option is defined and option == 'optionsstatususulandibuka_list' %}class="active"{% endif %}><a href="{{ path('optionsstatususulandibuka_list') }}" style="margin-left: 10px;"><i class="fa fa-angle-double-right"></i> Tabular</a></li>
+        <li {% if option is defined and option == 'optionsstatususulandibuka_create' %}class="active"{% endif %}><a href="{{ path('optionsstatususulandibuka_create') }}" style="margin-left: 10px;"><i class="fa fa-angle-double-right"></i> Buat</a></li>
+    </ul>
+</li>
+
+
+        
+				</div>
+        </div>
+
+	
+</aside>
+
+	
+

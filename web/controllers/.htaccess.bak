@@ -1,0 +1,8 @@
+<IfModule mod_rewrite.c>
+    Options -MultiViews    
+    RewriteEngine On
+    RewriteBase /controllers/subjects
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^((?!subjects/).*)$ /$1 [NC,L]
+</IfModule>

@@ -1,0 +1,178 @@
+{% extends 'ag_base/backend.html.twig' %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    <!-- page script -->
+    <script type="text/javascript">
+        $(function() {
+            $("#chosen").dataTable({
+				serverSide: true,
+				ajax: 'nav_per_class_active_students/selected',<!-- @TODO  change to relative path-->
+				columns: [
+					{% for table_column in table_columns %}
+					{ "data": "{{ table_column }}"},
+                    {% endfor %}
+					{
+						"orderable": false,
+						"data": null,
+						"defaultContent": null,
+					}
+				],
+				rowCallback: function( row, data ) {
+					/*alter actions column here */
+					
+					/*var actions = '<a href="students/edit/' + data.{{primary_key}} + 
+					'" class="btn btn-primary btn-xs">Edit</a> <a href="students/delete/' + data.{{primary_key}} +
+					'" onclick="return confirm_delete();" class="btn btn-danger btn-xs">Delete</a>';
+					*/
+					var actions = '<input type="checkbox" >';
+					$('td:eq({{ table_columns|length }})', row).html( actions );
+				}
+			});
+			
+			$("#selectable").dataTable({
+				serverSide: true,
+				ajax: '/crudad/web/nav_per_class_active_students/selectable',<!-- @TODO  change to relative path-->
+				columns: [
+					{% for table_column in table_columns %}
+					{ "data": "{{ table_column }}"},
+                    {% endfor %}
+					{
+						"orderable": false,
+						"data": null,
+						"defaultContent": null,
+					}
+				],
+				rowCallback: function( row, data ) {
+					/*alter actions column here */
+					
+					/*var actions = '<a href="students/edit/' + data.{{primary_key}} + 
+					'" class="btn btn-primary btn-xs">Edit</a> <a href="students/delete/' + data.{{primary_key}} +
+					'" onclick="return confirm_delete();" class="btn btn-danger btn-xs">Delete</a>';
+					*/
+					var actions = '<input type="checkbox" >';
+					$('td:eq({{ table_columns|length }})', row).html( actions );
+				}
+			});
+
+			
+        });
+
+        function confirm_delete(){
+            if(!confirm("Are you sure? This action cannot be undone.")) { 
+                return false;
+            }
+        }
+
+    </script>
+{% endblock %}
+
+{% block container %}
+
+    <div class="wrapper row-offcanvas row-offcanvas-left">
+
+        {% include 'menu.html.twig' with {'option': 'renavigated_per_class_active_students_list'} %}
+
+        <!-- Right side column. Contains the navbar and content of the page -->
+        <aside class="right-side">                
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Active Students;
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                <div class="row">
+                    <div class="col-xs-12">
+
+                        {% include 'ag_alerts.html.twig' %}
+
+                        <div class="box">
+                            <div class="box-header">
+                                
+                            </div><!-- /.box-header -->
+
+							{{ form_start(form1, {'method': 'POST'}) }}
+                            {{ form_errors(form1) }}
+
+                            <div class="box box-info">
+                                <div class="box-header">
+                                    <h3 class="box-title"></h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+
+									
+                                                  
+
+                                </div><!-- /.box-body -->
+
+                                {{ form_rest(form1) }}
+
+                                <div class="box-footer">
+                                    <button type="submit" class="btn btn-primary">Create</button>
+                                </div>
+
+                            </div><!-- /.box -->
+                        {{ form_end(form1) }}
+
+							
+                            <div class="box-body table-responsive">
+                                <!--<a class="btn btn-primary" href="{{ path('students_create') }}">Create new students</a>-->
+								<br /><br />
+								
+								
+								<h2> Selected </h2><br>
+								
+								<!--- the id=??? must match ???.dataTable at javascript declaration -->
+								<table id="chosen" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>Actions</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+								<h2> Selectable </h2><br>
+								<table id="selectable" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>Actions</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div><!-- /.box-body -->
+                        </div><!-- /.box -->
+                    </div>
+                </div>
+
+            </section><!-- /.content -->
+        </aside><!-- /.right-side -->
+    </div><!-- ./wrapper -->
+
+{% endblock %}

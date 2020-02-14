@@ -1,0 +1,130 @@
+{% extends 'ag_base/backend.html.twig' %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    <!-- page script -->
+    <script type="text/javascript">
+        $(function() {
+            $("#usulan_list").dataTable({
+				serverSide: true,
+				dataType:'json',
+				ajax: 'usulan/list',
+				columns: [
+					{% set ic=0 %}
+					{% for table_column in table_columns %}
+					{% set wpx=90  %}
+					{%if ic ==2 or ic ==4 %}
+						{%set wpx=150 %}
+					{%endif%}
+					{%if ic==0  %}
+						{%set wpx=20 %}
+					{%endif%}
+					{%if ic==5  %}
+						{%set wpx=300 %}
+					{%endif%}
+					{ "data": "{{ table_column }}", "width":"{{wpx}}px"},
+					{% set ic=ic+1 %}
+                    {% endfor %}
+					{
+						"orderable": false,
+						"data": null,
+						"defaultContent": null,
+					}
+				],
+				rowCallback: function( row, data ) {
+					var actions = '<a href="usulan/edit/' + data.{{primary_key}} + '" class="btn btn-primary btn-xs">Rubah</a> <a href="usulan/delete/' + data.{{primary_key}} + '" onclick="return confirm_delete();" class="btn btn-danger btn-xs">Hapus</a>';
+					$('td:eq({{ table_columns|length }})', row).html( actions );
+					
+					/** manipulating data views ... path **/
+					var s_PP =data.PATH_PROPOSAL ;
+					var s_render='too long';
+					var l = s_PP.length;
+					s_render='...'+s_PP.substring(l-5,l);
+					$('td:eq(7)', row).html( s_render); /** 7 --> PATH_PROPOSAL **/ 
+					
+					s_PP =data.PATH_REVIEW_1 ;
+					s_render='too long';
+					l = s_PP.length;
+					s_render='...'+s_PP.substring(l-5,l);
+					$('td:eq(10)', row).html(s_render );
+					
+					
+					s_PP =data.PATH_REVIEW_2 ;
+					s_render='too long';
+					l = s_PP.length;
+					s_render='...'+s_PP.substring(l-5,l);
+					$('td:eq(13)', row).html(s_render );
+					
+				}
+			});
+        });
+
+        function confirm_delete(){
+            if(!confirm("Are you sure? This action cannot be undone.")) { 
+                return false;
+            }
+        }
+
+    </script>
+{% endblock %}
+
+{% block container %}
+
+    <div class="wrapper row-offcanvas row-offcanvas-left">
+
+        {% include 'menu.html.twig' with {'option': 'usulan_list'} %}
+
+        <!-- Right side column. Contains the navbar and content of the page -->
+        <aside class="right-side">                
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Daftar {{app['translator'].trans('Usulan'|lower) }}
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                <div class="row">
+                    <div class="col-xs-12">
+
+                        {% include 'ag_alerts.html.twig' %}
+
+                        <div class="box">
+                            <div class="box-header">
+                                
+                            </div><!-- /.box-header -->
+
+                            <div class="box-body table-responsive">
+                                <a class="btn btn-primary" href="{{ path('usulan_create') }}">Buat  {{app['translator'].trans('usulan'|lower) }} </a><br /><br />
+                                <table id="usulan_list" class="table table-bordered table-striped" style="table-layout:fixed;word-wrap:break-word">
+                                    <thead>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{app['translator'].trans('usulan_' ~ table_column|lower)}}</th>
+                                            {% endfor %}
+                                            <th width="100px">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{app['translator'].trans('usulan_' ~ table_column|lower)}}</th>
+                                            {% endfor %}
+                                            <th width="100px">Aksi</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div><!-- /.box-body -->
+                        </div><!-- /.box -->
+                    </div>
+                </div>
+
+            </section><!-- /.content -->
+        </aside><!-- /.right-side -->
+    </div><!-- ./wrapper -->
+
+{% endblock %}

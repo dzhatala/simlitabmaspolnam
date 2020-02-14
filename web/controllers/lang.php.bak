@@ -1,0 +1,14 @@
+<?php
+
+/*
+ dzulqarnaenhatala@gmail.com
+*/
+
+
+
+$lang_words = array();
+/**__LANGUAGE_ARRAYS___**/
+
+array_merge($lang_words, array("optionsstatususulandibuka_optionsstatususulandibuka_id" => "no/id Pilihan"));
+return $lang_words;
+

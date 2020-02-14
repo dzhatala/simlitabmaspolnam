@@ -1,0 +1,9 @@
+php_flag display_errors off
+
+Options -MultiViews
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^ index.php [L]
+</IfModule>

@@ -1,0 +1,520 @@
+{% extends 'ag_base/backend.html.twig' %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    <!-- page script -->
+    <script type="text/javascript">
+		
+		//students migration entry type
+		var StudentMigration = function (admission_no,migration_type){
+			this.admission_no = admission_no ;
+			this.migration_type = migration_type;
+		}
+		
+		var ChosenCache = function (admission_no,status){
+			this.status = status;
+			this.admission_no = admission_no;
+		}
+		
+		var migrations=[]; // migrations list data for ajax call
+		var chosen_originals=[]; // save chosen original values ...
+        $(function() {
+			chosen_originals=[];
+            $("#chosen").dataTable({
+				serverSide: true,<!-- @todo, change to relative directory ...--->
+				ajax: '/crudad/web/index.php/renavigated/csdata_selected/{{nav_data.CLASS_SECTION_ID}}',<!-- @TODO  change to relative path-->
+				columns: [
+					{% for table_column in table_columns_chosen %}
+					{ "data": "{{ table_column }}"},
+                    {% endfor %}
+					{
+						"orderable": false,
+						"data": null,
+						"defaultContent": null,
+					}
+				],
+				rowCallback: function( row, data ) {
+					/*alter actions column here */
+					var as='',ls,dos; /****/
+					if(data.STATUS=='active'){
+						as=' selected="selected"  '; /*selected= no space*/
+						//_d('active detected');
+					}else if(data.STATUS=='leave'){
+						ls=' selected="selected"  ';
+						//_d('leave detected');
+						
+					}else if(data.STATUS=='dropped_out'){
+						dos=' selected="selected"  ';
+						//_d('do detected');
+						
+					}
+					chosen_originals.push(new ChosenCache(data.ADMISSION_NO,data.STATUS));
+					//_d("chosen_originals");
+					var actions ='<select name="'+data.{{primary_key}}+'" id="'+data.{{primary_key}}+'" onchange="chosen_toggle(this)"> '+
+										'<option  value="active"'+ as  +'>Active</option>' +
+										'<option  value="leave" '+ ls  +'>Leave</option>' +
+								   '<option  value="dropped_out"'+ dos +'>Dropped Out</option>' +
+										'<option value="remove">Remove</option>' +
+								  '</select>' ;
+					//var actions = '<input type="checkbox" id="'+data.{{primary_key}}+'" onchange="selected_toggle(this)">';
+					
+					$('td:eq({{ table_columns_chosen|length }})', row).html( actions );
+					
+					//_d(data.{{primary_key}}+" ->" + data.STATUS);
+						//$('#'+data.{{primary_key}}).val(data.STATUS);
+				}
+			});
+			
+			$("#selectable").dataTable({
+				serverSide: true,
+				ajax: '/crudad/web/index.php/renavigated/csdata_selectable/{{nav_data.CLASS_SECTION_ID}}',<!-- @TODO  change to relative path-->
+				columns: [
+					{% for table_column in table_columns %}
+					{ "data": "{{ table_column }}"},
+                    {% endfor %}
+					{
+						"orderable": false,
+						"data": null,
+						"defaultContent": null,
+					}
+				],
+				rowCallback: function( row, data ) {
+					/*alter actions column here */
+					
+					/*var actions = '<a href="students/edit/' + data.{{primary_key}} + 
+					'" class="btn btn-primary btn-xs">Edit</a> <a href="students/delete/' + data.{{primary_key}} +
+					'" onclick="return confirm_delete();" class="btn btn-danger btn-xs">Delete</a>';
+					*/
+					/**@TODO id= ... name = .. is it cross browser ?*/
+					var actions = '<input type="checkbox" id="'+data.{{primary_key}}+'" onchange="selectable_toggle(this)">';
+					$('td:eq({{ table_columns|length }})', row).html( actions );
+				}
+			});
+
+			
+        });
+		
+		
+		function findStudentMigration(key){
+			var i,sm ;
+			
+			for (i=0;i<migrations.length ; i++){
+				//_d( key+ " ?? "+migrations[i]);
+				if (migrations[i].indexOf(key)>=0) {
+					//_d("found "+key +" at " +i);
+					return i;
+				}
+			}
+			//_d("not found");
+			return -1;
+		}
+		/**@todo .id or .name ... cross browser issue ?**/
+		function selectable_toggle(obj){
+
+		
+			var idx=findStudentMigration(obj.id);
+			if(idx<0){
+				 migrations.push(obj.id + " #insert#");//insert so controller side can set 'active' automatically 
+				//_d("add "+migrations[migrations.length-1]);
+			}else {
+				//_d("remove "+migrations[idx]);
+				migrations.splice(idx,1);
+			}
+			
+			_d("selectable toggled  "+ obj.id+ "  "+obj.checked+", migrations.size: "+migrations.length);
+			
+			
+		}
+		
+		function findChosenCache(admission_no){
+			var i ; 
+			for (i =0 ; i<chosen_originals.length ; i++){
+				if(chosen_originals[i].admission_no == admission_no){
+					//_d ('found cache status = '+chosen_originals[i].status ); 
+					return (chosen_originals[i]);
+				}
+			}
+			
+			return null;
+		}
+		function chosen_toggle(obj){
+			var idx=findStudentMigration(obj.id);
+			var cache=findChosenCache(obj.id);
+			
+			mig_action=$('#'+obj.id).val();
+			//_d('chosen toggle data = '+data);
+			if(idx>=0){
+				//_d("remove "+migrations[idx]);
+				migrations.splice(idx,1);
+				
+			}
+			if(mig_action!=cache.status){ // only pushing changes ...
+				migrations.push(obj.id + " #"+mig_action+"#");
+				_d("chosen pushed: "+migrations[migrations.length-1]);
+			}
+			_d("chosen toggled  "+ obj+ "  "+$('#'+obj.id).val()+", migrations.size: "+migrations.length);
+		}
+		
+        function confirm_delete(){
+            if(!confirm("Are you sure? This action cannot be undone.")) { 
+                return false;
+            }
+        }
+		
+		/**select changes **/
+		/*$('form').change(
+			function (){
+				alert($('#form_DEPARTMENT_ID').val());
+			}
+		);*/
+		/**
+			@TODO @todo,
+			empty lower select when upper select is changed
+		**/
+		function renavigate(){
+				var ourl=window.location.pathname;
+				var nurl = ourl.substring(0,ourl.lastIndexOf('/')+1);
+				
+				//if ($('#form_DEPARTMENT_ID').val()<>"") nurl+=$('#form_DEPARTMENT_ID').val();
+				var anid="-1";
+				
+				anid =$('#form_DEPARTMENT_ID').val()+"";	
+				if (anid==null||anid.length==0) {
+					//_d("D_ID null");
+					anid='-1';
+				}
+				nurl+=anid;
+				
+				anid =$('#form_MAJOR_GRADE_ID').val()+"";	
+				if (anid==null||anid.length==0) {
+					//_d("D_ID null");
+					anid='-1';
+				}
+				nurl+=","+anid;
+				
+				
+				anid =$('#form_MAJOR_ID').val()+"";	
+				if (anid==null||anid.length==0) {
+					//_d("D_ID null");
+					anid='-1';
+				}
+				nurl+=","+anid;
+
+				anid =$('#form_BATCH_ID').val()+"";	
+				if (anid==null||anid.length==0) {
+					//_d("D_ID null");
+					anid='-1';
+				}
+				nurl+=","+anid;
+
+				anid =$('#form_ACADEMIC_CALENDAR_ID').val()+"";	
+				if (anid==null||anid.length==0) {
+					//_d("D_ID null");
+					anid='-1';
+				}
+				nurl+=","+anid;
+				
+				anid =$('#form_CLASS_SECTION_ID').val()+"";	
+				if (anid==null||anid.length==0) {
+					//_d("D_ID null");
+					anid='-1';
+				}
+				nurl+=","+anid;
+				
+				
+				_d(nurl);
+				
+				//move browser ...
+				$(location).attr('href',nurl);
+				
+		}
+		
+		
+		$('form').change(
+			function (){
+				//alert("xxx widget  change");
+				//$(location).attr('href','/');
+				renavigate();
+			}
+		);
+		
+		$('#form_DEPARTMENT_ID').change(
+			function (){
+				$('#form_MAJOR_ID').val("");
+				$('#form_BATCH_ID').val("");
+				$('#form_CLASS_SECTION_ID').val("");
+			}
+		);
+		
+		$('#form_MAJOR_GRADE_ID').change(
+			function (){
+				$('#form_MAJOR_ID').val("");
+				$('#form_BATCH_ID').val("");
+				$('#form_CLASS_SECTION_ID').val("");
+			}
+		);
+		
+		$('#form_MAJOR_ID').change(
+			function (){
+				//alert("xxx widget  change");
+				//$(location).attr('href','/');
+				//renavigate();
+				$('#form_BATCH_ID').val("");
+				$('#form_CLASS_SECTION_ID').val("");
+			}
+		);
+		
+		
+		
+		/*@todo , always reset foreign key on master changes ...
+		batch will reset class section ...
+		**/
+		$('#form_BATCH_ID').change(
+			function (){
+				$('#form_CLASS_SECTION_ID').val("");
+			}
+		);
+		
+		$('#form_ACADEMIC_CALENDAR_ID').change(
+			function (){
+				$('#form_CLASS_SECTION_ID').val("");
+			}
+		);
+	
+		
+		$(document).ready(
+			function (){
+				//alert("ready");
+				
+				//alert($('div.twig_debug').html());
+				$('div.twig_debug').html("debug is ready at :  "+new Date());
+				//_d($('#form_DEPARTMENT_ID').val());
+			}
+		);
+		
+		function _d(d){
+			//$('div.twig_debug').append("<BR>\n"+ new Date()+":  ==>  "+d);
+		};
+	
+		function add_selected(){
+			_d("request to add selectable ....");
+			if(migrations.length<=0) {
+				_d('nothing to migrate');
+				return false;
+			}
+			$.ajax({
+				url : '/crudad/web/renavigated/migrate/{{nav_data.CLASS_SECTION_ID}}'
+				,type  : "POST" , method : "POST"  
+				, data : {migrations:migrations} /*json(migrations)*/  //calling json(.) will refresh all pages ...
+				,dataType : 'json'
+				,success :  function (jsonData){ 
+							//_d('jsonData: ' +jsonData);
+							_d (" migrated") ;
+							//$(location).attr('');
+							$("#chosen").DataTable().ajax.reload(null,false);
+							$("#selectable").DataTable().ajax.reload(null,false);
+							migrations=[];
+							
+							}
+				, error :   function (x,y,z){ 
+							_d(x.responseText);
+							_d("erry: "+y);
+							_d ("errz; "+z) ;
+				
+							}
+				
+			});
+			return false; /**not submitting ... only handle click **/
+
+		}
+    </script>
+{% endblock %}
+
+{% block container %}
+
+    <div class="wrapper row-offcanvas row-offcanvas-left">
+
+        {% include 'menu.html.twig' with {'option': 'renavigated_nav_002'} %}
+
+        <!-- Right side column. Contains the navbar and content of the page -->
+        <aside class="right-side">                
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    <!--Active Students nav_002.twig.html<br>
+					nav_data : <br>
+					DEPARTMENT_ID : {{nav_data.DEPARTMENT_ID}} <br>
+					MAJOR_GRADE_ID : {{nav_data.MAJOR_GRADE_ID}} <br>
+					MAJOR_ID : {{nav_data.MAJOR_ID}} <br>
+					ACADEMIC_CALENDAR_ID : {{nav_data.ACADEMIC_CALENDAR_ID}} <br>
+					BATCH_ID : {{nav_data.BATCH_ID}} <br>
+					CLASS_SECTION_ID : {{nav_data.CLASS_SECTION_ID}} <br>-->
+					
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                <div class="row">
+                    <div class="col-xs-12">
+
+                        {% include 'ag_alerts.html.twig' %}
+
+                        <div class="box">
+                            <div class="box-header">
+                                
+                            </div><!-- /.box-header -->
+						{%if 0 %}
+						{{php_debug}} 
+						{%endif %}
+						<div class="twig_debug">
+						  twig debug here
+                        </div>
+                        <br>
+						
+						
+						{{ form_start(form, {'method': 'POST'}) }}
+                            {{ form_errors(form) }}
+
+                            <div class="box box-info">
+                                <div class="box-header">
+                                    <h3 class="box-title"></h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+
+									<!-- overriding form widgets here -->
+									<div class='form-group'>
+									    {{ form_label(form.ACADEMIC_CALENDAR_ID) }}
+									    {{ form_widget(form.ACADEMIC_CALENDAR_ID, { value:nav_data.ACADEMIC_CALENDAR_ID }) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.DEPARTMENT_ID) }}
+									    {{ form_widget(form.DEPARTMENT_ID, { value:nav_data.DEPARTMENT_ID }) }}
+									</div>
+				
+									<div class='form-group'>
+									    {{ form_label(form.MAJOR_GRADE_ID) }}
+									    {{ form_widget(form.MAJOR_GRADE_ID, { value:nav_data.MAJOR_GRADE_ID }) }}
+									</div>
+
+                                    
+									<div class='form-group'>
+									    {{ form_label(form.MAJOR_ID) }}
+									    {{ form_widget(form.MAJOR_ID, { value:nav_data.MAJOR_ID }) }}
+									</div>
+
+									<div class='form-group'>
+									    {{ form_label(form.BATCH_ID) }}
+									    {{ form_widget(form.BATCH_ID, { value:nav_data.BATCH_ID }) }}
+									</div>
+
+									
+									<div class='form-group'>
+									    {{ form_label(form.CLASS_SECTION_ID) }}
+									    {{ form_widget(form.CLASS_SECTION_ID, { value:nav_data.CLASS_SECTION_ID }) }}
+									</div>
+									
+
+                                </div><!-- /.box-body -->
+
+                                {{ form_rest(form) }} <!-- for the rest of form error --->
+
+								<!--
+                                <div class="box-footer">
+                                    <button type="submit" class="btn btn-primary">Apply</button>
+                                </div>
+								-->
+
+                            </div><!-- /.box -->
+                        {{ form_end(form) }}
+
+							
+                            <div class="box-body table-responsive">
+                                <!--<a class="btn btn-primary" href="{{ path('students_create') }}">Create new students</a>-->
+								<br /><br />
+								
+								
+								{% if nav_data.CLASS_SECTION_ID >0 %}
+								
+								<h2> 
+									
+									<div id="selected_title">
+										selected
+									</div>
+								
+								</h2>
+								
+								<!--- the id=??? must match ???.dataTable at javascript declaration -->
+								<table id="chosen" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            {% for table_column in table_columns_chosen %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>					
+												<a href="" onclick="return add_selected();" class="btn btn-danger btn-xs">
+												Apply
+												</a>
+											</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            {% for table_column in table_columns_chosen %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>					
+												<a href="" onclick="return add_selected();" class="btn btn-danger btn-xs">
+												Apply
+												</a>
+											</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+								
+								
+								<h2> Selectable </h2><br>
+								<table id="selectable" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>
+												<a href="" onclick="return add_selected();" class="btn btn-danger btn-xs">
+												Add Selected
+												</a>
+											</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            {% for table_column in table_columns %}
+                                            <th>{{ table_column }}</th>
+                                            {% endfor %}
+                                            <th>
+												<a href="" onclick="return add_selected();" class="btn btn-danger btn-xs">
+												Add Selected
+												</a>
+											</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+								
+								{% endif %}
+								
+								
+                            </div><!-- /.box-body -->
+                        </div><!-- /.box -->
+                    </div>
+                </div>
+
+            </section><!-- /.content -->
+        </aside><!-- /.right-side -->
+    </div><!-- ./wrapper -->
+
+{% endblock %}

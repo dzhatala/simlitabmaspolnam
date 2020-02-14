@@ -1,0 +1,401 @@
+<?php
+
+/*
+ * This file is part of the CRUD Admin Generator project.
+ *
+ * Author: Jon Segador <jonseg@gmail.com>
+ * Web: http://crud-admin-generator.com
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+
+require_once __DIR__.'/../../../vendor/autoload.php';
+require_once __DIR__.'/../../../src/app.php';
+
+use Symfony\Component\Validator\Constraints as Assert;
+
+$app->match('/class_sections/list', function (Symfony\Component\HttpFoundation\Request $request) use ($app) {  
+    $start = 0;
+    $vars = $request->query->all();
+    $qsStart = (int)$vars["start"];
+    $search = $vars["search"];
+    $order = $vars["order"];
+    $columns = $vars["columns"];
+    $qsLength = (int)$vars["length"];    
+    
+    if($qsStart) {
+        $start = $qsStart;
+    }    
+	
+    $index = $start;   
+    $rowsPerPage = $qsLength;
+       
+    $rows = array();
+    
+    $searchValue = $search['value'];
+    $orderValue = $order[0];
+    
+    $orderClause = "";
+    if($orderValue) {
+        $orderClause = " ORDER BY ". $columns[(int)$orderValue['column']]['data'] . " " . $orderValue['dir'];
+    }
+    
+    $table_columns = array(
+		'CLASS_SECTION_ID', 
+		'BATCH_ID', 
+		'ACADEMIC_CALENDAR_ID', 
+		'NAME', 
+
+    );
+    
+    $table_columns_type = array(
+		'int(11)', 
+		'int(11)', 
+		'int(11)', 
+		'varchar(100)', 
+
+    );    
+    
+    $whereClause = "";
+    
+    $i = 0;
+    foreach($table_columns as $col){
+        
+        if ($i == 0) {
+           $whereClause = " WHERE";
+        }
+        
+        if ($i > 0) {
+            $whereClause =  $whereClause . " OR"; 
+        }
+        
+        $whereClause =  $whereClause . " " . $col . " LIKE '%". $searchValue ."%'";
+        
+        $i = $i + 1;
+    }
+    
+    $recordsTotal = $app['db']->executeQuery("SELECT * FROM `class_sections`" . $whereClause . $orderClause)->rowCount();
+    
+    $find_sql = "SELECT * FROM `class_sections`". $whereClause . $orderClause . " LIMIT ". $index . "," . $rowsPerPage;
+    $rows_sql = $app['db']->fetchAll($find_sql, array());
+
+    foreach($rows_sql as $row_key => $row_sql){
+        for($i = 0; $i < count($table_columns); $i++){
+
+			if($table_columns[$i] == 'BATCH_ID'){
+			    //$findexternal_sql = 'SELECT BATCH_ID FROM `BATCHES` WHERE `BATCH_ID` = ?';
+				$findexternal_sql='SELECT CONCAT(CONCAT(MAJORS.NAME,'-') , BATCHES.NAME) AS LOOKUP FROM BATCHES, MAJORS'.
+				'WHERE BATCHES.MAJOR_ID=MAJORS.MAJOR_ID AND BATCH_ID=?' ;
+
+			    $findexternal_row = $app['db']->fetchAssoc($findexternal_sql, array($row_sql[$table_columns[$i]]));
+			    $rows[$row_key][$table_columns[$i]] = $findexternal_row['BATCH_ID'];
+			}
+			else if($table_columns[$i] == 'ACADEMIC_CALENDAR_ID'){
+			    $findexternal_sql = 'SELECT ACADEMIC_CALENDAR_ID FROM `ACADEMIC_CALENDARS` WHERE `ACADEMIC_CALENDAR_ID` = ?';
+			    $findexternal_row = $app['db']->fetchAssoc($findexternal_sql, array($row_sql[$table_columns[$i]]));
+			    $rows[$row_key][$table_columns[$i]] = $findexternal_row['ACADEMIC_CALENDAR_ID'];
+			}
+			else{
+			    $rows[$row_key][$table_columns[$i]] = $row_sql[$table_columns[$i]];
+			}
+
+
+        }
+    }    
+    
+    $queryData = new queryData();
+    $queryData->start = $start;
+    $queryData->recordsTotal = $recordsTotal;
+    $queryData->recordsFiltered = $recordsTotal;
+    $queryData->data = $rows;
+    
+    return new Symfony\Component\HttpFoundation\Response(json_encode($queryData), 200);
+});
+
+
+
+
+/* Download blob img */
+$app->match('/class_sections/download', function (Symfony\Component\HttpFoundation\Request $request) use ($app) { 
+    
+    // menu
+    $rowid = $request->get('id');
+    $idfldname = $request->get('idfld');
+    $fieldname = $request->get('fldname');
+    
+    if( !$rowid || !$fieldname ) die("Invalid data");
+    
+    $find_sql = "SELECT " . $fieldname . " FROM " . class_sections . " WHERE ".$idfldname." = ?";
+    $row_sql = $app['db']->fetchAssoc($find_sql, array($rowid));
+
+    if(!$row_sql){
+        $app['session']->getFlashBag()->add(
+            'danger',
+            array(
+                'message' => 'Row not found!',
+            )
+        );        
+        return $app->redirect($app['url_generator']->generate('menu_list'));
+    }
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: image/jpeg');
+    header("Content-length: ".strlen( $row_sql[$fieldname] ));
+    header('Expires: 0');
+    header('Cache-Control: public');
+    header('Pragma: public');
+    ob_clean();    
+    echo $row_sql[$fieldname];
+    exit();
+   
+    
+});
+
+
+
+$app->match('/class_sections', function () use ($app) {
+    
+	$table_columns = array(
+		'CLASS_SECTION_ID', 
+		'BATCH_ID', 
+		'ACADEMIC_CALENDAR_ID', 
+		'NAME', 
+
+    );
+
+    $primary_key = "CLASS_SECTION_ID";	
+
+    return $app['twig']->render('class_sections/list.html.twig', array(
+    	"table_columns" => $table_columns,
+        "primary_key" => $primary_key
+    ));
+        
+})
+->bind('class_sections_list');
+
+
+
+$app->match('/class_sections/create', function () use ($app) {
+    
+    $initial_data = array(
+		'BATCH_ID' => '', 
+		'ACADEMIC_CALENDAR_ID' => '', 
+		'NAME' => '', 
+
+    );
+
+    $form = $app['form.factory']->createBuilder('form', $initial_data);
+
+	$options = array();
+	//$findexternal_sql = 'SELECT `BATCH_ID`, `BATCH_ID` FROM `BATCHES`';
+	$findexternal_sql="SELECT CONCAT(CONCAT(MAJORS.NAME,'-') , BATCHES.NAME) AS LOOKUP FROM BATCHES, MAJORS'.
+				'WHERE BATCHES.MAJOR_ID=MAJORS.MAJOR_ID " ;
+	$findexternal_rows = $app['db']->fetchAll($findexternal_sql, array());
+	foreach($findexternal_rows as $findexternal_row){
+	    $options[$findexternal_row['BATCH_ID']] = $findexternal_row['BATCH_ID'];
+	}
+	if(count($options) > 0){
+	    $form = $form->add('BATCH_ID', 'choice', array(
+	        'required' => true,
+	        'choices' => $options,
+	        'expanded' => false,
+	        'constraints' => new Assert\Choice(array_keys($options))
+	    ));
+	}
+	else{
+	    $form = $form->add('BATCH_ID', 'text', array('required' => true));
+	}
+
+	$options = array();
+	$findexternal_sql = 'SELECT `ACADEMIC_CALENDAR_ID`, `ACADEMIC_CALENDAR_ID` FROM `ACADEMIC_CALENDARS`';
+	$findexternal_rows = $app['db']->fetchAll($findexternal_sql, array());
+	foreach($findexternal_rows as $findexternal_row){
+	    $options[$findexternal_row['ACADEMIC_CALENDAR_ID']] = $findexternal_row['ACADEMIC_CALENDAR_ID'];
+	}
+	if(count($options) > 0){
+	    $form = $form->add('ACADEMIC_CALENDAR_ID', 'choice', array(
+	        'required' => true,
+	        'choices' => $options,
+	        'expanded' => false,
+	        'constraints' => new Assert\Choice(array_keys($options))
+	    ));
+	}
+	else{
+	    $form = $form->add('ACADEMIC_CALENDAR_ID', 'text', array('required' => true));
+	}
+
+
+
+	$form = $form->add('NAME', 'text', array('required' => true));
+
+
+    $form = $form->getForm();
+
+    if("POST" == $app['request']->getMethod()){
+
+        $form->handleRequest($app["request"]);
+
+        if ($form->isValid()) {
+            $data = $form->getData();
+
+            $update_query = "INSERT INTO `class_sections` (`BATCH_ID`, `ACADEMIC_CALENDAR_ID`, `NAME`) VALUES (?, ?, ?)";
+            $app['db']->executeUpdate($update_query, array($data['BATCH_ID'], $data['ACADEMIC_CALENDAR_ID'], $data['NAME']));            
+
+
+            $app['session']->getFlashBag()->add(
+                'success',
+                array(
+                    'message' => 'class_sections created!',
+                )
+            );
+            return $app->redirect($app['url_generator']->generate('class_sections_list'));
+
+        }
+    }
+
+    return $app['twig']->render('class_sections/create.html.twig', array(
+        "form" => $form->createView()
+    ));
+        
+})
+->bind('class_sections_create');
+
+
+
+$app->match('/class_sections/edit/{id}', function ($id) use ($app) {
+
+    $find_sql = "SELECT * FROM `class_sections` WHERE `CLASS_SECTION_ID` = ?";
+    $row_sql = $app['db']->fetchAssoc($find_sql, array($id));
+
+    if(!$row_sql){
+        $app['session']->getFlashBag()->add(
+            'danger',
+            array(
+                'message' => 'Row not found!',
+            )
+        );        
+        return $app->redirect($app['url_generator']->generate('class_sections_list'));
+    }
+
+    
+    $initial_data = array(
+		'BATCH_ID' => $row_sql['BATCH_ID'], 
+		'ACADEMIC_CALENDAR_ID' => $row_sql['ACADEMIC_CALENDAR_ID'], 
+		'NAME' => $row_sql['NAME'], 
+
+    );
+
+
+    $form = $app['form.factory']->createBuilder('form', $initial_data);
+
+	$options = array();
+	$findexternal_sql = 'SELECT `BATCH_ID`, `BATCH_ID` FROM `BATCHES`';
+	$findexternal_rows = $app['db']->fetchAll($findexternal_sql, array());
+	foreach($findexternal_rows as $findexternal_row){
+	    $options[$findexternal_row['BATCH_ID']] = $findexternal_row['BATCH_ID'];
+	}
+	if(count($options) > 0){
+	    $form = $form->add('BATCH_ID', 'choice', array(
+	        'required' => true,
+	        'choices' => $options,
+	        'expanded' => false,
+	        'constraints' => new Assert\Choice(array_keys($options))
+	    ));
+	}
+	else{
+	    $form = $form->add('BATCH_ID', 'text', array('required' => true));
+	}
+
+	$options = array();
+	$findexternal_sql = 'SELECT `ACADEMIC_CALENDAR_ID`, `ACADEMIC_CALENDAR_ID` FROM `ACADEMIC_CALENDARS`';
+	$findexternal_rows = $app['db']->fetchAll($findexternal_sql, array());
+	foreach($findexternal_rows as $findexternal_row){
+	    $options[$findexternal_row['ACADEMIC_CALENDAR_ID']] = $findexternal_row['ACADEMIC_CALENDAR_ID'];
+	}
+	if(count($options) > 0){
+	    $form = $form->add('ACADEMIC_CALENDAR_ID', 'choice', array(
+	        'required' => true,
+	        'choices' => $options,
+	        'expanded' => false,
+	        'constraints' => new Assert\Choice(array_keys($options))
+	    ));
+	}
+	else{
+	    $form = $form->add('ACADEMIC_CALENDAR_ID', 'text', array('required' => true));
+	}
+
+
+	$form = $form->add('NAME', 'text', array('required' => true));
+
+
+    $form = $form->getForm();
+
+    if("POST" == $app['request']->getMethod()){
+
+        $form->handleRequest($app["request"]);
+
+        if ($form->isValid()) {
+            $data = $form->getData();
+
+            $update_query = "UPDATE `class_sections` SET `BATCH_ID` = ?, `ACADEMIC_CALENDAR_ID` = ?, `NAME` = ? WHERE `CLASS_SECTION_ID` = ?";
+            $app['db']->executeUpdate($update_query, array($data['BATCH_ID'], $data['ACADEMIC_CALENDAR_ID'], $data['NAME'], $id));            
+
+
+            $app['session']->getFlashBag()->add(
+                'success',
+                array(
+                    'message' => 'class_sections edited!',
+                )
+            );
+            return $app->redirect($app['url_generator']->generate('class_sections_edit', array("id" => $id)));
+
+        }
+    }
+
+    return $app['twig']->render('class_sections/edit.html.twig', array(
+        "form" => $form->createView(),
+        "id" => $id
+    ));
+        
+})
+->bind('class_sections_edit');
+
+
+
+$app->match('/class_sections/delete/{id}', function ($id) use ($app) {
+
+    $find_sql = "SELECT * FROM `class_sections` WHERE `CLASS_SECTION_ID` = ?";
+    $row_sql = $app['db']->fetchAssoc($find_sql, array($id));
+
+    if($row_sql){
+        $delete_query = "DELETE FROM `class_sections` WHERE `CLASS_SECTION_ID` = ?";
+        $app['db']->executeUpdate($delete_query, array($id));
+
+        $app['session']->getFlashBag()->add(
+            'success',
+            array(
+                'message' => 'class_sections deleted!',
+            )
+        );
+    }
+    else{
+        $app['session']->getFlashBag()->add(
+            'danger',
+            array(
+                'message' => 'Row not found!',
+            )
+        );  
+    }
+
+    return $app->redirect($app['url_generator']->generate('class_sections_list'));
+
+})
+->bind('class_sections_delete');
+
+
+
+
+
+
